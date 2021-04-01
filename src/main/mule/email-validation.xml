@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="cc54d9b3-c5dd-4317-a998-6b90e4a313a7" />
+	<sub-flow name="email-validationSub_Flow" doc:id="64a09956-2949-4b34-b73c-823ef264ccec" >
+		<validation:is-email doc:id="c401d87c-fc42-46ac-8b77-b64191f64708" config-ref="Validation_Config" email="#[payload.emailReceived]" message="Invalid email address, please corret it"/>
+		<ee:transform doc:name="Transform Message" doc:id="bbf01043-53cc-47a8-9e73-822f4fbb83a1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"email": payload.emailReceived,
+	"name" : payload.name
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="62f2dbbb-b4a3-4b11-a1aa-350441817ec4" message="#[payload]"/>
+	</sub-flow>
+</mule>
