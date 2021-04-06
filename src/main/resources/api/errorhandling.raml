@@ -21,3 +21,13 @@ traits:
                   "emailReceived" : "rick@gmail.com",
                   "name" : "rick"
               }
+/dataWeave:
+  description: validating the email and customize the error response 
+  get:
+    is:
+      - client
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include /examples/dataWeaveRequest.raml

@@ -21,4 +21,35 @@ output application/json
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="62f2dbbb-b4a3-4b11-a1aa-350441817ec4" message="#[payload]"/>
 	</sub-flow>
+	<sub-flow name="dataWeave-validationFlow" doc:id="a7746758-37db-42ef-80ab-6ba420725c33" >
+		<set-payload value='#[[&#10;  {&#10;    "first_name": "James",&#10;    "zip": 70.116&#10;  },&#10;  {&#10;    "first_name": "Josephine",&#10;    "zip": 48.816&#10;  },&#10;  {&#10;    "first_name": "Art",&#10;    "zip": 80.142&#10;  },&#10;  {&#10;    "first_name": "Lenna",&#10;    "zip": 9.9501&#10;  }&#10;]]' doc:name="Set Payload" doc:id="b890772a-6b47-4b0a-bbfd-bd7a5715124f" />
+		<ee:transform doc:name="Transform Message" doc:id="3be02271-0f2c-4fdd-b9d4-1f91d1d10641" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+// function to scan the decimal value from a number 
+fun decimal(data) = flatten (data scan(".?[0-9]+"))[1]
+var det = payload map (item, index) ->  {
+    "Quantity": decimal(item.zip)
+}
+// var decending: to order decimal values in decending order
+var decending = (det orderBy (ten)-> ten.Quantity)[-1 to 0] 
+
+// var add : to sum the decimal value and round the value
+var add= round(sum((decending).Quantity))
+
+// var payloadAfterDecending = To order the payload in decending order based on decimal value  
+var payloadAfterDecending = decending flatMap (v) ->
+    payload filter ($.zip contains (v.Quantity))
+---
+// using decimal sum(var add) add 1 to zip in each object in the sorted payload(var payloadAfterDecending) using index < decimal sum(var add)
+payloadAfterDecending map (value,index)-> {
+    "first_name" : value.first_name,
+    "QT" : if (index < add) round(value.zip) +1 else round(value.zip)
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="53e6d1cb-5b01-4f36-8513-c7e91b714f33" message='"client_secret" : #[attributes.headers.client_secret], 	"client_id" : #[attributes.headers.client_id]'/>
+	</sub-flow>
 </mule>
